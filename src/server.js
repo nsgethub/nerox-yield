@@ -9,6 +9,8 @@ async function main() {
   await initRedis()
   const app = express()
   app.use('/api/yield', require('./routes/yield'))
+  app.use(express.json())
+  app.use('/api/agent', require('./routes/agent'))
   app.get('/health', (req, res) => res.json({ ok: true }))
   app.listen(PORT, () => console.log(`[yield] http://localhost:${PORT}/api/yield/status`))
   startYieldScanner() // first scan after 20 s, then every hour

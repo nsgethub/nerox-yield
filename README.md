@@ -97,6 +97,17 @@ Once a day the grades are written to BNB Smart Chain, so anyone can read them fo
 - Pool key: the pool address, or the DefiLlama pool UUID followed by 4 zero bytes.
 - `lastHash` is the keccak256 of the full packed list (sorted by key), so a list rebuilt from the events can be checked against it.
 
+## For AI agents
+
+The same data is available to AI agents over [MCP](https://modelcontextprotocol.io) (JSON-RPC over HTTP POST, free, no key):
+
+- Endpoint: `https://api.neroxcoin.org/api/agent/mcp`
+- Tools: `list_pools` (filter by worst allowed grade, stablecoin-only, size, yield) and `get_pool_risk` (full report with every reason for one pool)
+- ERC-8004 identity: agent **416550** in the BNB Smart Chain Identity Registry `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
+- Registration file: `https://api.neroxcoin.org/api/agent/registration.json`
+
+Code: [`src/routes/agent.js`](src/routes/agent.js)
+
 ## API
 
 The live API is open: `https://api.neroxcoin.org/api/yield/...`
@@ -125,6 +136,7 @@ Settings: `PORT`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASS`. No API keys are need
 ```
 src/server.js               API server
 src/routes/yield.js         API routes
+src/routes/agent.js         MCP endpoint and ERC-8004 registration file for AI agents
 src/services/yieldScan.js   hourly data collection
 src/services/yieldRisk.js   risk grade rules
 src/services/redis.js       snapshot storage
