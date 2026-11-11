@@ -67,8 +67,8 @@ Protocol
 
 Where the yield comes from
 - more than half of the yield paid in reward tokens: medium
-- yield above 200% a year: high; above 60%: medium
-- PancakeSwap fee yield above 60%: medium (depends on recent heavy trading)
+- yield above 100% a year: high; above 30%: medium
+- PancakeSwap fee yield above 30%: medium (depends on recent heavy trading)
 - yield above 20% and more than 3× its 30-day average: medium
 - DefiLlama marks the yield as an outlier: medium
 
@@ -86,6 +86,16 @@ Tokens (GoPlus)
 Well-known tokens (USDT, WBNB and others on the GoPlus trust list) are not penalised for owner rights, because that is how their issuers run them.
 
 All rules are in [`src/services/yieldRisk.js`](src/services/yieldRisk.js).
+
+## On-chain grades
+
+Once a day the grades are written to BNB Smart Chain, so anyone can read them for free and check that past grades were not changed.
+
+- Contract: [`0xA187f9168696D763e8700Db128517BCe04C61f23`](https://bscscan.com/address/0xA187f9168696D763e8700Db128517BCe04C61f23#code) (source verified on BscScan)
+- Source: [`contracts/NeroXYieldGrades.sol`](contracts/NeroXYieldGrades.sol)
+- Each daily `Grades` event carries the pools whose grade changed, 22 bytes each: 20-byte pool key, grade letter (`A`..`E`, 0 = removed), score 0..100.
+- Pool key: the pool address, or the DefiLlama pool UUID followed by 4 zero bytes.
+- `lastHash` is the keccak256 of the full packed list (sorted by key), so a list rebuilt from the events can be checked against it.
 
 ## API
 
@@ -120,6 +130,7 @@ src/services/yieldRisk.js   risk grade rules
 src/services/redis.js       snapshot storage
 scripts/scan-once.js        one scan from the command line
 test/                       tests for the risk grade
+contracts/                  on-chain contract for daily grades
 web/                        Next.js pages of neroxcoin.org/yield and their 8-language texts
 ```
 
