@@ -97,6 +97,26 @@ Once a day the grades are written to BNB Smart Chain, so anyone can read them fo
 - Pool key: the pool address, or the DefiLlama pool UUID followed by 4 zero bytes.
 - `lastHash` is the keccak256 of the full packed list (sorted by key), so a list rebuilt from the events can be checked against it.
 
+## NeroX Guard: grades other contracts can read
+
+A second contract keeps the current grade of every PancakeSwap pool on the list, so another contract or an agent wallet can check a pool before a deposit.
+
+- Contract: [`0x0e5d8936804B704149Cb7Fa2AABDEb41bF5a9a92`](https://bscscan.com/address/0x0e5d8936804B704149Cb7Fa2AABDEb41bF5a9a92#code) (source verified on BscScan)
+- Source: [`contracts/NeroXGuard.sol`](contracts/NeroXGuard.sol)
+- `gradeOf(pool)` returns grade (1 = A .. 5 = E, 0 = not rated), score and whether the data is fresh
+- `isAllowed(pool, maxGrade)` returns true only if the pool is rated, the data is fresh and the grade is not worse than `maxGrade`
+- `requireAllowed(pool, maxGrade)` reverts otherwise, so a deposit into a risky pool can be blocked on-chain
+- Grades are refreshed once a day. If they are not refreshed for more than 3 days, `isAllowed` returns false for every pool.
+
+```solidity
+interface INeroXGuard {
+    function requireAllowed(address pool, uint8 maxGrade) external view;
+}
+
+// allow deposits only into pools graded A or B
+INeroXGuard(0x0e5d8936804B704149Cb7Fa2AABDEb41bF5a9a92).requireAllowed(pool, 2);
+```
+
 ## For AI agents
 
 The same data is available to AI agents over [MCP](https://modelcontextprotocol.io) (JSON-RPC over HTTP POST, free, no key):
