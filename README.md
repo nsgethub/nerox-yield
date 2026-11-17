@@ -54,7 +54,7 @@ Every pool starts with 100 points. Each finding takes points away:
 
 Pool size and money flow
 - under $250K: high; under $1M: medium; $50M and more: good
-- 30% or more money left the pool in 7 days: high
+- 15% or more money left the pool in 7 days: medium; 30% or more: high
 
 Age
 - pool younger than 14 days: high; younger than 90 days: medium
@@ -80,7 +80,8 @@ Tokens (GoPlus)
 - cannot be sold (honeypot), hidden owner, owner can change balances: critical
 - cannot be bought freely, tax 10% or more, owner can take back control, contract can destroy itself, code not published: high
 - tax above 1%: medium
-- tokens not on the GoPlus trust list also get: owner can create tokens, code can be replaced, transfers can be paused (medium); owner can block addresses (low); owner can change the tax (high); fewer than 300 holders (medium)
+- tokens not on the GoPlus trust list also get: owner can create tokens, code can be replaced, transfers can be paused (high); owner can block addresses (medium); owner can change the tax (high); fewer than 300 holders (medium)
+- if one owner can create tokens, replace the code, pause transfers or block addresses of a token that is not on the trust list, the pool gets C at best, whatever its points
 - check not done yet: info
 
 Well-known tokens (USDT, WBNB and others on the GoPlus trust list) are not penalised for owner rights, because that is how their issuers run them.

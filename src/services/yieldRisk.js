@@ -54,14 +54,15 @@ function tokenReasons(sym, t) {
   if (String(t.is_open_source) === '0')
     out.push({ level: 'high', key: 'closed_source', p: { sym }, text: `${sym}: the token code is not published.` })
   if (!trusted) {
+    // одна команда владельца может заморозить, подменить или размыть токен: такой пул не выше C (cap)
     if (on('is_mintable'))
-      out.push({ level: 'medium', key: 'mintable', p: { sym }, text: `${sym}: the owner can create new tokens.` })
+      out.push({ level: 'high', cap: 'C', key: 'mintable', p: { sym }, text: `${sym}: the owner can create new tokens.` })
     if (on('is_proxy'))
-      out.push({ level: 'medium', key: 'proxy', p: { sym }, text: `${sym}: the token code can be replaced by its owner.` })
+      out.push({ level: 'high', cap: 'C', key: 'proxy', p: { sym }, text: `${sym}: the token code can be replaced by its owner.` })
     if (on('transfer_pausable'))
-      out.push({ level: 'medium', key: 'pausable', p: { sym }, text: `${sym}: transfers can be paused by the owner.` })
+      out.push({ level: 'high', cap: 'C', key: 'pausable', p: { sym }, text: `${sym}: transfers can be paused by the owner.` })
     if (on('is_blacklisted'))
-      out.push({ level: 'low', key: 'blacklist', p: { sym }, text: `${sym}: the owner can block addresses.` })
+      out.push({ level: 'medium', cap: 'C', key: 'blacklist', p: { sym }, text: `${sym}: the owner can block addresses.` })
     if (on('slippage_modifiable') || on('personal_slippage_modifiable'))
       out.push({ level: 'high', key: 'tax_change', p: { sym }, text: `${sym}: the owner can change the tax at any time.` })
     const holders = Number(t.holder_count) || 0
@@ -83,8 +84,8 @@ function assess(p, ctx) {
   else if (p.tvl >= 50e6) add('good', 'tvl_large', `Large pool (${money(p.tvl)}).`, { tvl: money(p.tvl) })
 
   // отток денег за 7 дней
-  if (p.tvl7dChange != null && p.tvl7dChange <= -0.3)
-    add('high', 'tvl_outflow', `Money is leaving: ${Math.round(-p.tvl7dChange * 100)}% less in the pool than 7 days ago.`, { pct: Math.round(-p.tvl7dChange * 100) })
+  if (p.tvl7dChange != null && p.tvl7dChange <= -0.15)
+    add(p.tvl7dChange <= -0.3 ? 'high' : 'medium', 'tvl_outflow', `Money is leaving: ${Math.round(-p.tvl7dChange * 100)}% less in the pool than 7 days ago.`, { pct: Math.round(-p.tvl7dChange * 100) })
 
   // возраст пула / протокола
   if (p.createdAt) {
@@ -138,6 +139,11 @@ function assess(p, ctx) {
   let score = 100
   for (const x of r) score -= PENALTY[x.level] || 0
   score = Math.max(0, Math.min(100, score))
+  // потолок оценки: например, если владелец токена может остановить переводы, пул не получает A или B
+  for (const x of r) {
+    const top = x.cap && GRADES.find(([, l]) => l === x.cap)
+    if (top) score = Math.min(score, (GRADES[GRADES.indexOf(top) - 1] || [101])[0] - 1)
+  }
   const g = GRADES.find(([min]) => score >= min)
   const order = { critical: 0, high: 1, medium: 2, low: 3, info: 4, good: 5 }
   r.sort((a, b) => order[a.level] - order[b.level])
